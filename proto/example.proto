@@ -1,0 +1,154 @@
+
+syntax = "proto3";
+
+
+import "proto/gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/mwitkow/validator.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+
+
+option go_package = "./pb";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "Test API";
+        version: "1.0";
+        description: "Test version";
+        contact: {
+            name: "Test project";
+            email: "aqaurius6666@gmail.com";
+        };
+    };
+    base_path: "/api";
+    schemes: HTTP;
+    consumes: "application/json";
+    produces: "application/json";
+    security_definitions: {
+        security : {
+            key: "certificate"
+            value: {
+                name: "Authorization"
+                type: 2,
+                in: 2,
+            }
+        }
+    }
+};
+
+service Api {
+
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/user"
+        };
+        
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Get User";
+            tags: "User";
+            responses: {
+                key: "200"
+                value: {
+                    description: "OK";
+                }
+            }
+            security: {
+                security_requirement: {
+                    key: "certificate"
+                }
+            }
+        };
+    }
+    rpc PostUser(PostUserRequest) returns (PostUserResponse) {
+        option (google.api.http) = {
+            post: "/user"
+            body: "*"
+        };
+        
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Post User";
+            tags: "User";
+            responses: {
+                key: "200"
+                value: {
+                    description: "OK";
+                }
+            }
+            security: {
+                    security_requirement: {
+                        key: "certificate"
+                    }
+                }
+        };
+    }
+}
+
+
+message GetUserResponse {
+    string name = 1;
+    int64 age = 2;
+}
+
+message PostUserResponse {
+    string name = 1;
+    int64 age = 2;
+}
+
+message GetUserRequest {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            required: ["id"]
+        }
+    };
+
+    string name = 1 [
+        (gogoproto.customname) = "my_name",
+        (gogoproto.moretags) = "gorm:\"column:name\""
+    ];
+    int64 age = 2 [
+        (validator.field) = {
+            int_gt: 0
+            human_error: "age must be positive integer"
+        }
+    ];
+    google.protobuf.Timestamp create_date = 3 [
+        (gogoproto.nullable) = true,
+        (gogoproto.stdtime) = true
+        ];
+    string id = 4 [
+        (validator.field) = {
+            uuid_ver: 4
+            human_error: "invalid id"
+        }
+    ];
+}
+
+message PostUserRequest {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            required: ["id"]
+        }
+    };
+
+    string name = 1 [
+        (gogoproto.customname) = "my_name",
+        (gogoproto.moretags) = "gorm:\"column:name\""
+    ];
+    int64 age = 2 [
+        (validator.field) = {
+            int_gt: 0
+            human_error: "age must be positive integer"
+        }
+    ];
+    google.protobuf.Timestamp create_date = 3 [
+        (gogoproto.nullable) = true
+        ];
+    string id = 4 [
+        (validator.field) = {
+            uuid_ver: 4
+            human_error: "invalid id"
+        }
+    ];
+}
